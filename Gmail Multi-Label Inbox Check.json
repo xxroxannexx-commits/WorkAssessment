@@ -32,7 +32,7 @@
       ],
       "credentials": {
         "gmailOAuth2": {
-          "id": "haSLOcRF04yyaGPB",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -54,7 +54,7 @@
       "webhookId": "0959033b-4692-4f2b-88ad-ffce807dec92",
       "credentials": {
         "gmailOAuth2": {
-          "id": "haSLOcRF04yyaGPB",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Gmail account"
         }
       }
@@ -130,17 +130,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1oJOdMST9E7WFXrbNIq63JiXVOB8wD8A8JZ9cNKUhLUY",
+          "value": "<< PASTE_YOUR_GOOGLE_SHEET_ID_HERE >>",
           "mode": "list",
           "cachedResultName": "Sender Information (n8n)",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oJOdMST9E7WFXrbNIq63JiXVOB8wD8A8JZ9cNKUhLUY/edit?usp=drivesdk"
+          "cachedResultUrl": "<< PASTE_YOUR_GOOGLE_SHEET_URL_HERE >>"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oJOdMST9E7WFXrbNIq63JiXVOB8wD8A8JZ9cNKUhLUY/edit#gid=0"
+          "cachedResultUrl": "<< PASTE_YOUR_SHEET_TAB_URL_HERE >>"
         },
         "columns": {
           "mappingMode": "autoMapInputData",
@@ -215,7 +215,7 @@
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "1YRRRcaAPwejtoSA",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       }
@@ -274,7 +274,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -381,7 +381,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -412,7 +412,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -506,7 +506,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -549,7 +549,7 @@
       ],
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       }
@@ -738,7 +738,7 @@
   },
   "versionId": "9b62c9ce-75ca-4957-8a18-db13fe03ae5a",
   "meta": {
-    "instanceId": "5a2f42397a20c9f0a0295146ba4e91617d4510b3c5ccc0a8206693e6742aba4b"
+    "instanceId": "<< YOUR_N8N_INSTANCE_ID_WILL_REGENERATE_ON_IMPORT >>"
   },
   "nodeGroups": [
     {
