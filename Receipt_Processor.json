@@ -1,0 +1,907 @@
+{
+  "name": "Receipt Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "4d87f880-af0a-4c95-9da9-4e574d028b37",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1824,
+        192
+      ],
+      "webhookId": "4314977f-1d00-43b4-a6ae-4f3de1927664",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-photo",
+              "leftValue": "={{ $json.message.photo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dacedd3e-a9a3-4829-ade8-57af017402ef",
+      "name": "Has Photo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1152,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "I didn't catch that. Kindly resend the image — if you sent another file type, kindly send it as a JPEG, JPG, or PNG file instead. Thank you!",
+        "additionalFields": {}
+      },
+      "id": "51d178b9-6cad-4403-ab08-8750569b9c9c",
+      "name": "Send Help Message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -928,
+        288
+      ],
+      "webhookId": "e520f751-84f0-4d2c-9095-c09cdb850ae1",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const message = $input.first().json.message;\n\n// Telegram sends multiple resolutions of the same photo; the last one is the largest/highest quality\nconst largestPhoto = message.photo[message.photo.length - 1];\n\n// \"Submission date\" = the date the photo was sent to the bot, in the bot server's UTC time\nconst submissionDate = new Date(message.date * 1000);\nconst dateFolder = submissionDate.toISOString().split('T')[0]; // YYYY-MM-DD\n\nreturn [{\n  json: {\n    file_id: largestPhoto.file_id,\n    chat_id: message.chat.id,\n    submission_date: dateFolder,\n    submission_timestamp: submissionDate.toISOString()\n  }\n}];"
+      },
+      "id": "e6f166a6-ae5e-4bc7-bb88-80e5daa95df8",
+      "name": "Extract Photo Info",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.file_id }}",
+        "additionalFields": {}
+      },
+      "id": "3697de0f-66b5-4a09-a19b-218db86036fb",
+      "name": "Download Photo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -704,
+        96
+      ],
+      "webhookId": "b806a998-2a0b-43ce-a963-d4c8b644c14c",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst binaryData = item.binary.data;\nconst buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst base64 = buffer.toString('base64');\nconst mimeType = binaryData.mimeType || 'image/jpeg';\n\nreturn [{\n  json: {\n    ...item.json,\n    base64Image: base64,\n    mimeType: mimeType\n  },\n  binary: item.binary\n}];"
+      },
+      "id": "b4dcb6e7-f4b9-445d-93ec-067e5e440690",
+      "name": "Convert to Base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [ { parts: [ { text: \"Extract the following fields from this receipt image and respond with ONLY valid JSON (no markdown, no code fences, no explanation): merchant_name (string), date (the date printed on the receipt, formatted YYYY-MM-DD, or null if not visible), total_amount (number only, no currency symbol), currency (3-letter code like USD or PHP, guess from context if not printed). If a field cannot be determined, use null.\" }, { inline_data: { mime_type: $json.mimeType, data: $json.base64Image } } ] } ], generationConfig: { temperature: 0.1 } }) }}",
+        "options": {}
+      },
+      "id": "3d937e8d-cc98-470f-b7fe-b506b3506909",
+      "name": "Gemini Extract Receipt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        96
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "oQczxvFNEjIGmjyT",
+          "name": "Query Auth account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst text = response.candidates[0].content.parts[0].text;\nconst cleaned = text.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = { merchant_name: null, date: null, total_amount: null, currency: null, category: null, parse_error: text };\n}\n\nconst prev = $('Extract Photo Info').first().json;\n\nreturn [{\n  json: {\n    ...prev,\n    merchant_name: parsed.merchant_name,\n    receipt_date: parsed.date,\n    total_amount: parsed.total_amount,\n    currency: parsed.currency,\n    parse_error: parsed.parse_error || null\n  },\n  binary: $('Download Photo').first().binary\n}];"
+      },
+      "id": "c22076d8-0765-4276-9496-e351461d2589",
+      "name": "Parse Gemini Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "={{ \"mimeType = 'application/vnd.google-apps.folder' and name = '\" + $json.submission_date + \"' and '\" + \"14khfyiKkIFIDbdRtTehMfW8GVMHF0EbG\" + \"' in parents and trashed = false\" }}",
+        "filter": {},
+        "options": {}
+      },
+      "id": "04a4385c-8911-4d98-af06-43e354c8ecb0",
+      "name": "Search Date Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        192,
+        96
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "WXXhizSdcGFstzRF",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst prev = $('Parse Gemini Response').first().json;\nconst foundId = items.length > 0 ? items[0].json.id : null;\n\nreturn [{\n  json: {\n    ...prev,\n    folderFound: !!foundId,\n    existingFolderId: foundId\n  },\n  binary: $('Parse Gemini Response').first().binary\n}];"
+      },
+      "id": "2ecb1ef5-5005-4c50-8939-faea37d8f68c",
+      "name": "Check Folder Found",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "folder-exists",
+              "leftValue": "={{ $json.folderFound }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cb2ad285-46ed-4454-80f7-e390d4074caa",
+      "name": "Folder Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json.submission_date }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "14khfyiKkIFIDbdRtTehMfW8GVMHF0EbG",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "649b2b38-2635-48aa-8d79-ff108653dd21",
+      "name": "Create Date Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        864,
+        192
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "WXXhizSdcGFstzRF",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const newFolder = $input.first().json;\nconst prev = $('Check Folder Found').first().json;\n\nreturn [{\n  json: {\n    ...prev,\n    folderId: newFolder.id\n  },\n  binary: $('Check Folder Found').first().binary\n}];"
+      },
+      "id": "d9daf896-72a7-407c-8ffc-c25321adab6e",
+      "name": "Set New Folder Id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "name": "={{ ($json.merchant_name || 'receipt') + '_' + $json.submission_date + '_' + $json.file_id.slice(-6) + '.jpg' }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.folderId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "c1cfdd73-8bb1-4f88-845d-925e2151f946",
+      "name": "Upload Photo to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1312,
+        96
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "WXXhizSdcGFstzRF",
+          "name": "Google Drive account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1JjXnRmHfetK-9U8kPxP3Xj6HCrFPwrBU3tQiOzv4-QY",
+          "mode": "list",
+          "cachedResultName": "Photo Processing (n8n)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JjXnRmHfetK-9U8kPxP3Xj6HCrFPwrBU3tQiOzv4-QY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JjXnRmHfetK-9U8kPxP3Xj6HCrFPwrBU3tQiOzv4-QY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Submission Date": "={{ $('Parse Gemini Response').first().json.submission_date }}",
+            "Merchant Name": "={{ $('Parse Gemini Response').first().json.merchant_name }}",
+            "Receipt Date": "={{ $('Parse Gemini Response').first().json.receipt_date }}",
+            "Amount": "={{ $('Parse Gemini Response').first().json.total_amount }}",
+            "Currency": "={{ $('Parse Gemini Response').first().json.currency }}",
+            "Drive Link File": "={{ $json.webViewLink }}",
+            "Chat ID": "={{ $('Parse Gemini Response').first().json.chat_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Submission Date",
+              "displayName": "Submission Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Merchant Name",
+              "displayName": "Merchant Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Receipt Date",
+              "displayName": "Receipt Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Amount",
+              "displayName": "Amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Currency",
+              "displayName": "Currency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Drive Link File",
+              "displayName": "Drive Link File",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Chat ID",
+              "displayName": "Chat ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "85644b01-150c-4839-a6b8-c46fd11d7ada",
+      "name": "Append to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1536,
+        96
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1YRRRcaAPwejtoSA",
+          "name": "Google Sheets account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Parse Gemini Response').first().json.chat_id }}",
+        "text": "=✅ Receipt saved!\n\nMerchant: {{ $('Parse Gemini Response').first().json.merchant_name || 'Unknown' }}\nDate: {{ $('Parse Gemini Response').first().json.receipt_date || 'Unknown' }}\nAmount: {{ $('Parse Gemini Response').first().json.total_amount || '?' }} {{ $('Parse Gemini Response').first().json.currency || '' }}\n\nFiled under {{ $('Parse Gemini Response').first().json.submission_date }}.",
+        "additionalFields": {}
+      },
+      "id": "0542e7b7-ce63-4b4a-bacb-d2f84b1074a9",
+      "name": "Send Confirmation",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        96
+      ],
+      "webhookId": "c848ea76-9308-4d59-a723-41c0ee05250f",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const prev = $('Check Folder Found').first().json;\n\nreturn [{\n  json: {\n    ...prev,\n    folderId: prev.existingFolderId\n  },\n  binary: $('Check Folder Found').first().binary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "00509f5d-4bfc-4f81-b9c4-ad50d555b949",
+      "name": "Use Existing Folder"
+    },
+    {
+      "parameters": {
+        "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
+        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        240
+      ],
+      "id": "6e7053bb-be26-4e79-8bcd-c724ba30b7d0",
+      "name": "Error Message",
+      "webhookId": "02540e12-a3d2-4c3e-95af-37eea1ff1345",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
+        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        240
+      ],
+      "id": "832061a3-3485-4712-ac3e-488508deb19a",
+      "name": "Error Message1",
+      "webhookId": "4ceeca2f-9bee-4630-9481-00052f3715d0",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
+        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1136,
+        336
+      ],
+      "id": "e2abe15d-b5fe-481e-b4f3-a100a3a70304",
+      "name": "Error Message2",
+      "webhookId": "1d0e5ed6-06fa-4cb8-a72b-3ead3a8de8d9",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "48806e7a-2b2f-4e27-8e30-cd94d3562a8c",
+              "leftValue": "=   {{ $json.message.text }}",
+              "rightValue": "/start",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1600,
+        192
+      ],
+      "id": "39d6a872-52b6-432c-83e3-ba7a25a157d2",
+      "name": "Is/start"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "👋 Welcome! I'm your receipt bot.  \n\nJust send me a photo (JPEG, JPG, or PNG) of a receipt, and I'll take care of the rest. Ready whenever you are — just send a photo to get started!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1360,
+        48
+      ],
+      "id": "9c479bf8-5e2f-4c8c-a61c-f3913f05447f",
+      "name": "Welcome Message",
+      "webhookId": "c8ec384a-f305-4130-9dc6-3382624b5a7e",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
+        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        256
+      ],
+      "id": "c7ecb95f-bb41-4a27-888f-a82adf32f934",
+      "name": "Error Message3",
+      "webhookId": "a5f7eb1b-1ddc-4719-b95e-0dd2a539c207",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
+        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        240
+      ],
+      "id": "21256108-27cb-45ff-8e97-d94689f3b4ed",
+      "name": "Error Message4",
+      "webhookId": "0897b4cd-7a3b-4a36-a40a-4e1dc3d55cc7",
+      "credentials": {
+        "telegramApi": {
+          "id": "4T9Z1uRAn5w7kWZY",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is/start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Photo?": {
+      "main": [
+        [
+          {
+            "node": "Extract Photo Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Help Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Photo Info": {
+      "main": [
+        [
+          {
+            "node": "Download Photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Photo": {
+      "main": [
+        [
+          {
+            "node": "Convert to Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to Base64": {
+      "main": [
+        [
+          {
+            "node": "Gemini Extract Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Extract Receipt": {
+      "main": [
+        [
+          {
+            "node": "Parse Gemini Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Gemini Response": {
+      "main": [
+        [
+          {
+            "node": "Search Date Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Date Folder": {
+      "main": [
+        [
+          {
+            "node": "Check Folder Found",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Folder Found": {
+      "main": [
+        [
+          {
+            "node": "Folder Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Folder Exists?": {
+      "main": [
+        [
+          {
+            "node": "Use Existing Folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Date Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Date Folder": {
+      "main": [
+        [
+          {
+            "node": "Set New Folder Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set New Folder Id": {
+      "main": [
+        [
+          {
+            "node": "Upload Photo to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Photo to Drive": {
+      "main": [
+        [
+          {
+            "node": "Append to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Use Existing Folder": {
+      "main": [
+        [
+          {
+            "node": "Upload Photo to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is/start": {
+      "main": [
+        [
+          {
+            "node": "Welcome Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has Photo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Welcome Message": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d0d2292f-7e14-45d2-aee4-289372300922",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5a2f42397a20c9f0a0295146ba4e91617d4510b3c5ccc0a8206693e6742aba4b"
+  },
+  "nodeGroups": [],
+  "id": "jZ8sValbsq3EyvV9",
+  "tags": []
+}

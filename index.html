@@ -536,39 +536,45 @@
     </ul>
 
     <div class="media-item">
-      <div class="media">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="M21 15l-5-5L5 19"/></svg>
-        <div class="cap">Screenshot: full workflow canvas</div>
-        <div class="sub">Replace this block with an &lt;img&gt; tag, same as Workflow 01</div>
-      </div>
-      <p class="caption">Add a caption here explaining what this screenshot shows, same as the Workflow 01 images above.</p>
+      <img src="images/workflow2.png" alt="Receipt bot workflow — full n8n canvas">
+      <p class="caption">The complete workflow in n8n: a Telegram trigger checks for /start or a photo, extracts and scans the receipt with Gemini, files the photo by date in Drive, and logs the details to a Sheet.</p>
     </div>
 
-    <div class="debug">
-      <h3>Problems that came up while building it</h3>
+    <div class="media-item">
+      <img src="images/Telegram.png" alt="Telegram bot triggers when the user taps Start">
+      <p class="caption">The workflow triggers the moment a user clicks Start on the Telegram bot, kicking off the conversation.</p>
+    </div>
 
-      <div class="debug-item">
-        <div class="mark">!</div>
-        <div>
-          <div class="problem">Uploads silently failed when a receipt's date-folder already existed</div>
-          <div class="fix">The "reuse existing folder" branch was a Set node that dropped the photo's binary data on the way through. <b>Fixed</b> by rebuilding it as a Code node that explicitly carries the binary data forward alongside the folder ID.</div>
-        </div>
-      </div>
+    <div class="media-item">
+      <img src="images/telegram%20start.png" alt="Bot's welcome message after Start is clicked">
+      <p class="caption">Once /start is clicked, the bot replies with a welcome message and asks the user to send a receipt photo.</p>
+    </div>
 
-      <div class="debug-item">
-        <div class="mark">!</div>
-        <div>
-          <div class="problem">Folder search returning zero results stopped the workflow entirely</div>
-          <div class="fix">n8n halts a branch when a node returns no items — so "no folder found yet" (the expected, common case) killed the run instead of routing to folder creation. <b>Fixed</b> by enabling "Always Output Data" and rewriting the check to key off a real folder ID rather than just item count.</div>
-        </div>
-      </div>
+    <div class="media-item">
+      <img src="images/Telegram%20send%20receipt.png" alt="User sends a receipt photo and Gemini extracts the details">
+      <p class="caption">The user sends a photo of a valid receipt, and Gemini scans it to pull out the merchant, date, and amount automatically.</p>
+    </div>
 
-      <div class="debug-item">
-        <div class="mark">!</div>
-        <div>
-          <div class="problem">Telegram confirmation messages failed with "chat not found"</div>
-          <div class="fix">A field meant to hold a dynamic expression was being sent as literal text instead of being evaluated. <b>Fixed</b> by forcing expression mode on the field so it correctly resolved to the sender's actual chat ID.</div>
-        </div>
+    <div class="media-item">
+      <img src="images/Google%20Drive%20ROOTFOLDER.png" alt="Root Drive folder named WORKFLOW 2">
+      <p class="caption">Every receipt photo is uploaded into a single root folder in Drive named "WORKFLOW 2".</p>
+    </div>
+
+    <div class="media-item">
+      <img src="images/Google%20Drive%20RECEIPTS.png" alt="Receipt photos automatically separated into date folders">
+      <p class="caption">Inside the root folder, photos are automatically separated into subfolders by the date they were uploaded — no manual sorting needed.</p>
+    </div>
+
+    <div class="media-item">
+      <img src="images/Google%20Sheet2.png" alt="Extracted receipt details logged to Google Sheet">
+      <p class="caption">The merchant name, receipt date, amount, currency, and a link back to the Drive file all get logged as a row in the Sheet for every receipt processed.</p>
+    </div>
+
+    <div class="download-row">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
+      <div>
+        <a href="Receipt_Processor.json" download>Download the workflow file</a>
+        <p>The exported n8n JSON for this automation — import it directly to inspect or reuse the actual node setup.</p>
       </div>
     </div>
   </section>
