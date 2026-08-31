@@ -19,7 +19,7 @@
       "webhookId": "4314977f-1d00-43b4-a6ae-4f3de1927664",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -61,7 +61,7 @@
     {
       "parameters": {
         "chatId": "={{ $json.message.chat.id }}",
-        "text": "I didn't catch that. Kindly resend the image — if you sent another file type, kindly send it as a JPEG, JPG, or PNG file instead. Thank you!",
+        "text": "I didn't catch that. Kindly resend the image \u2014 if you sent another file type, kindly send it as a JPEG, JPG, or PNG file instead. Thank you!",
         "additionalFields": {}
       },
       "id": "51d178b9-6cad-4403-ab08-8750569b9c9c",
@@ -75,7 +75,7 @@
       "webhookId": "e520f751-84f0-4d2c-9095-c09cdb850ae1",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -110,7 +110,7 @@
       "webhookId": "b806a998-2a0b-43ce-a963-d4c8b644c14c",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -151,7 +151,7 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "httpQueryAuth": {
-          "id": "oQczxvFNEjIGmjyT",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Query Auth account"
         }
       },
@@ -174,7 +174,7 @@
       "parameters": {
         "resource": "fileFolder",
         "searchMethod": "query",
-        "queryString": "={{ \"mimeType = 'application/vnd.google-apps.folder' and name = '\" + $json.submission_date + \"' and '\" + \"14khfyiKkIFIDbdRtTehMfW8GVMHF0EbG\" + \"' in parents and trashed = false\" }}",
+        "queryString": "={{ \"mimeType = 'application/vnd.google-apps.folder' and name = '\" + $json.submission_date + \"' and '\" + \"<< PASTE_YOUR_ROOT_DRIVE_FOLDER_ID_HERE >>\" + \"' in parents and trashed = false\" }}",
         "filter": {},
         "options": {}
       },
@@ -191,7 +191,7 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       },
@@ -254,7 +254,7 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "14khfyiKkIFIDbdRtTehMfW8GVMHF0EbG",
+          "value": "<< PASTE_YOUR_ROOT_DRIVE_FOLDER_ID_HERE >>",
           "mode": "id"
         },
         "options": {}
@@ -271,7 +271,7 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       },
@@ -302,7 +302,7 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "={{ $json.folderId }}",
+          "value": "<< PASTE_YOUR_ROOT_DRIVE_FOLDER_ID_HERE >>",
           "mode": "id"
         },
         "options": {}
@@ -319,7 +319,7 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "WXXhizSdcGFstzRF",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Drive account"
         }
       },
@@ -330,17 +330,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1JjXnRmHfetK-9U8kPxP3Xj6HCrFPwrBU3tQiOzv4-QY",
+          "value": "<< PASTE_YOUR_GOOGLE_SHEET_ID_HERE >>",
           "mode": "list",
           "cachedResultName": "Photo Processing (n8n)",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JjXnRmHfetK-9U8kPxP3Xj6HCrFPwrBU3tQiOzv4-QY/edit?usp=drivesdk"
+          "cachedResultUrl": "<< PASTE_YOUR_GOOGLE_SHEET_URL_HERE >>"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1JjXnRmHfetK-9U8kPxP3Xj6HCrFPwrBU3tQiOzv4-QY/edit#gid=0"
+          "cachedResultUrl": "<< PASTE_YOUR_SHEET_TAB_URL_HERE >>"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -444,7 +444,7 @@
       "waitBetweenTries": 2000,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "1YRRRcaAPwejtoSA",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Google Sheets account"
         }
       },
@@ -453,7 +453,7 @@
     {
       "parameters": {
         "chatId": "={{ $('Parse Gemini Response').first().json.chat_id }}",
-        "text": "=✅ Receipt saved!\n\nMerchant: {{ $('Parse Gemini Response').first().json.merchant_name || 'Unknown' }}\nDate: {{ $('Parse Gemini Response').first().json.receipt_date || 'Unknown' }}\nAmount: {{ $('Parse Gemini Response').first().json.total_amount || '?' }} {{ $('Parse Gemini Response').first().json.currency || '' }}\n\nFiled under {{ $('Parse Gemini Response').first().json.submission_date }}.",
+        "text": "=\u2705 Receipt saved!\n\nMerchant: {{ $('Parse Gemini Response').first().json.merchant_name || 'Unknown' }}\nDate: {{ $('Parse Gemini Response').first().json.receipt_date || 'Unknown' }}\nAmount: {{ $('Parse Gemini Response').first().json.total_amount || '?' }} {{ $('Parse Gemini Response').first().json.currency || '' }}\n\nFiled under {{ $('Parse Gemini Response').first().json.submission_date }}.",
         "additionalFields": {}
       },
       "id": "0542e7b7-ce63-4b4a-bacb-d2f84b1074a9",
@@ -467,7 +467,7 @@
       "webhookId": "c848ea76-9308-4d59-a723-41c0ee05250f",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -488,7 +488,7 @@
     {
       "parameters": {
         "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
-        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "text": "\u26a0\ufe0f Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment \u2014 if it keeps failing, let your admin know.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -502,7 +502,7 @@
       "webhookId": "02540e12-a3d2-4c3e-95af-37eea1ff1345",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -510,7 +510,7 @@
     {
       "parameters": {
         "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
-        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "text": "\u26a0\ufe0f Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment \u2014 if it keeps failing, let your admin know.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -524,7 +524,7 @@
       "webhookId": "4ceeca2f-9bee-4630-9481-00052f3715d0",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -532,7 +532,7 @@
     {
       "parameters": {
         "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
-        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "text": "\u26a0\ufe0f Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment \u2014 if it keeps failing, let your admin know.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -546,7 +546,7 @@
       "webhookId": "1d0e5ed6-06fa-4cb8-a72b-3ead3a8de8d9",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -587,7 +587,7 @@
     {
       "parameters": {
         "chatId": "={{ $json.message.chat.id }}",
-        "text": "👋 Welcome! I'm your receipt bot.  \n\nJust send me a photo (JPEG, JPG, or PNG) of a receipt, and I'll take care of the rest. Ready whenever you are — just send a photo to get started!",
+        "text": "\ud83d\udc4b Welcome! I'm your receipt bot.  \n\nJust send me a photo (JPEG, JPG, or PNG) of a receipt, and I'll take care of the rest. Ready whenever you are \u2014 just send a photo to get started!",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -601,7 +601,7 @@
       "webhookId": "c8ec384a-f305-4130-9dc6-3382624b5a7e",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -609,7 +609,7 @@
     {
       "parameters": {
         "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
-        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "text": "\u26a0\ufe0f Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment \u2014 if it keeps failing, let your admin know.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -623,7 +623,7 @@
       "webhookId": "a5f7eb1b-1ddc-4719-b95e-0dd2a539c207",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -631,7 +631,7 @@
     {
       "parameters": {
         "chatId": "8696601728:AAGS0VGO-_4qYcTTiWkr_7ZxKuwtfRefBdw",
-        "text": "⚠️ Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment — if it keeps failing, let your admin know.",
+        "text": "\u26a0\ufe0f Something went wrong processing that receipt, and I couldn't finish saving it. Please try resending the photo in a moment \u2014 if it keeps failing, let your admin know.",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
@@ -645,7 +645,7 @@
       "webhookId": "0897b4cd-7a3b-4a36-a40a-4e1dc3d55cc7",
       "credentials": {
         "telegramApi": {
-          "id": "4T9Z1uRAn5w7kWZY",
+          "id": "YOUR_CREDENTIAL_ID",
           "name": "Telegram account"
         }
       }
@@ -899,7 +899,7 @@
   "versionId": "d0d2292f-7e14-45d2-aee4-289372300922",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "5a2f42397a20c9f0a0295146ba4e91617d4510b3c5ccc0a8206693e6742aba4b"
+    "instanceId": "<< YOUR_N8N_INSTANCE_ID_WILL_REGENERATE_ON_IMPORT >>"
   },
   "nodeGroups": [],
   "id": "jZ8sValbsq3EyvV9",
